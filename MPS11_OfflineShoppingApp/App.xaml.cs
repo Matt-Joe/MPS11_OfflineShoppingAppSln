@@ -1,19 +1,56 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MPS11_OfflineShoppingApp.Services;
+using System.Diagnostics;
 
 namespace MPS11_OfflineShoppingApp
 {
     public partial class App : Application
     {
-        public App(AppShell appShell)
+        public App(DatabaseService databaseService)
         {
             InitializeComponent();
 
-            MainPage = appShell;
+            // Create a loading screen while the database initializes.
+            ContentPage loadingPage = new ContentPage
+            {
+                Content = new ActivityIndicator
+                {
+                    IsRunning = true,
+                    VerticalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.Center
+                }
+            };
+
+            MainPage = loadingPage;
+
+            InitializeDatabaseAsync(databaseService, loadingPage);
         }
 
-        protected override Window CreateWindow(IActivationState? activationState)
+        private async void InitializeDatabaseAsync(
+            DatabaseService databaseService,
+            ContentPage loadingPage)
         {
-            return new Window(new AppShell());
+            try
+            {
+                await databaseService.InitializeAsync();
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    MainPage = new AppShell();
+                });
+            }
+            catch (Exception ex)
+            {
+                // Write the complete exception to the Debug Output window.
+                Debug.WriteLine(ex.ToString());
+
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await loadingPage.DisplayAlert(
+                        "Database Error",
+                        ex.Message,
+                        "OK");
+                });
+            }
         }
     }
 }

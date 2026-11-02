@@ -76,4 +76,13 @@
 	  <Folder Include="Views\Behaviours\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <MauiXaml Update="Views\CustomerSelectionView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\ProductCatalogueView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	</ItemGroup>
+
 </Project>

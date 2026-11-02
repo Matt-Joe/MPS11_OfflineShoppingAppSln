@@ -4,12 +4,13 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MPS11_OfflineShoppingApp"
+    xmlns:views="clr-namespace:MPS11_OfflineShoppingApp.Views"
     Title="MPS11_OfflineShoppingApp"
     FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="customer-selection" />
+        Title="Select Customer"
+        Route="customer-selection"
+        ContentTemplate="{DataTemplate views:CustomerSelectionView}" />
 
 </Shell>
