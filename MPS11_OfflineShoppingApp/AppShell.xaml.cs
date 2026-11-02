@@ -11,6 +11,10 @@ namespace MPS11_OfflineShoppingApp
             Routing.RegisterRoute(
             "product-catalogue",
             typeof(ProductCatalogueView));
+
+            Routing.RegisterRoute(
+            "product-details",
+            typeof(ProductDetailsView));
         }
     }
 }

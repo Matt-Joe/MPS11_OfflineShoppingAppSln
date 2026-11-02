@@ -1,4 +1,5 @@
-﻿using MPS11_OfflineShoppingApp.Models;
+﻿
+using MPS11_OfflineShoppingApp.Models;
 using SQLite;
 
 namespace MPS11_OfflineShoppingApp.Services
@@ -7,26 +8,19 @@ namespace MPS11_OfflineShoppingApp.Services
     {
         private SQLiteAsyncConnection? database;
 
-        // Provides safe access to the database connection.
         private SQLiteAsyncConnection Database =>
             database ?? throw new InvalidOperationException(
                 "Database has not been initialized.");
 
-
+        // Initialise the database and copy it to writable storage.
         public async Task InitializeAsync()
         {
             string databasePath = Path.Combine(
                 FileSystem.AppDataDirectory,
                 "OfflineStoreDb.db");
 
-            System.Diagnostics.Debug.WriteLine(
-                "STEP 1: Checking database file...");
-
             if (!File.Exists(databasePath))
             {
-                System.Diagnostics.Debug.WriteLine(
-                    "STEP 2: Database does not exist. Copying...");
-
                 using Stream source =
                     await FileSystem.OpenAppPackageFileAsync(
                         "OfflineStoreDb.db");
@@ -35,26 +29,14 @@ namespace MPS11_OfflineShoppingApp.Services
                     File.Create(databasePath);
 
                 await source.CopyToAsync(destination);
-
-                System.Diagnostics.Debug.WriteLine(
-                    "STEP 3: Database copied successfully.");
             }
-
-            System.Diagnostics.Debug.WriteLine(
-                "STEP 4: Opening SQLite connection...");
 
             database = new SQLiteAsyncConnection(databasePath);
 
-            System.Diagnostics.Debug.WriteLine(
-                "STEP 5: SQLite connection created.");
-
+            // Enable foreign key enforcement for this connection.
             await Database.ExecuteAsync(
                 "PRAGMA foreign_keys = ON;");
-
-            System.Diagnostics.Debug.WriteLine(
-                "STEP 6: Foreign keys enabled. Initialization complete.");
         }
-
 
         // Retrieve all customers.
         public async Task<List<Customer>> GetCustomersAsync()
@@ -64,16 +46,16 @@ namespace MPS11_OfflineShoppingApp.Services
                 .ToListAsync();
         }
 
-        // Retrieve a customer by their ID.
-        public async Task<Customer?> GetCustomerByIdAsync(
-            int customerId)
+        // Retrieve a customer using their ID.
+        public async Task<Customer?> GetCustomerByIdAsync(int customerId)
         {
             return await Database
                 .Table<Customer>()
-                .Where(customer =>
-                    customer.CustomerId == customerId)
+                .Where(customer => customer.CustomerId == customerId)
                 .FirstOrDefaultAsync();
         }
+
+        // Retrieve all products.
         public async Task<List<Product>> GetProductsAsync()
         {
             return await Database
@@ -81,11 +63,30 @@ namespace MPS11_OfflineShoppingApp.Services
                 .ToListAsync();
         }
 
+        // Retrieve a product using its ID.
+        public async Task<Product?> GetProductByIdAsync(int productId)
+        {
+            return await Database
+                .Table<Product>()
+                .Where(product => product.ProductId == productId)
+                .FirstOrDefaultAsync();
+        }
+
+        // Retrieve all categories.
         public async Task<List<Category>> GetCategoriesAsync()
         {
             return await Database
                 .Table<Category>()
                 .ToListAsync();
+        }
+
+        // Retrieve a category using its ID.
+        public async Task<Category?> GetCategoryByIdAsync(int categoryId)
+        {
+            return await Database
+                .Table<Category>()
+                .Where(category => category.CategoryId == categoryId)
+                .FirstOrDefaultAsync();
         }
     }
 }

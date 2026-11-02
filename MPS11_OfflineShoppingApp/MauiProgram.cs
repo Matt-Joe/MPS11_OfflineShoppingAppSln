@@ -34,6 +34,10 @@ namespace MPS11_OfflineShoppingApp
             builder.Services.AddTransient<ProductCatalogueViewModel>();
 
             builder.Services.AddTransient<ProductCatalogueView>();
+
+            builder.Services.AddTransient<ProductDetailsViewModel>();
+
+            builder.Services.AddTransient<ProductDetailsView>();
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
