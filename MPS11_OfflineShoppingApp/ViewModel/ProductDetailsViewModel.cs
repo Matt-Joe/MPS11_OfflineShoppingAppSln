@@ -9,11 +9,13 @@ namespace MPS11_OfflineShoppingApp.ViewModels
     public class ProductDetailsViewModel : BaseViewModel, IQueryAttributable
     {
         private readonly DatabaseService databaseService;
+        private readonly CustomerSessionService customerSessionService;
 
         private Product? product;
         private string categoryName = string.Empty;
         private int quantity = 1;
         private bool isLoading;
+        private bool isAddingToCart;
         private string statusMessage = string.Empty;
 
         public Product? Product
@@ -24,8 +26,11 @@ namespace MPS11_OfflineShoppingApp.ViewModels
                 if (SetProperty(ref product, value))
                 {
                     OnPropertyChanged(nameof(FormattedPrice));
+                    OnPropertyChanged(nameof(TotalPrice));
+
                     IncreaseQuantityCommand.RaiseCanExecuteChanged();
                     DecreaseQuantityCommand.RaiseCanExecuteChanged();
+                    AddToCartCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -44,8 +49,10 @@ namespace MPS11_OfflineShoppingApp.ViewModels
                 if (SetProperty(ref quantity, value))
                 {
                     OnPropertyChanged(nameof(TotalPrice));
+
                     IncreaseQuantityCommand.RaiseCanExecuteChanged();
                     DecreaseQuantityCommand.RaiseCanExecuteChanged();
+                    AddToCartCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -53,7 +60,25 @@ namespace MPS11_OfflineShoppingApp.ViewModels
         public bool IsLoading
         {
             get => isLoading;
-            set => SetProperty(ref isLoading, value);
+            set
+            {
+                if (SetProperty(ref isLoading, value))
+                {
+                    AddToCartCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public bool IsAddingToCart
+        {
+            get => isAddingToCart;
+            set
+            {
+                if (SetProperty(ref isAddingToCart, value))
+                {
+                    AddToCartCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public string StatusMessage
@@ -72,17 +97,20 @@ namespace MPS11_OfflineShoppingApp.ViewModels
         public string TotalPrice =>
             Product == null
                 ? "R 0.00"
-                : ((Product.Price * Quantity) / 100m).ToString(
+                : ((decimal)Product.Price * Quantity / 100m).ToString(
                     "C2",
                     CultureInfo.GetCultureInfo("en-ZA"));
 
         public AsyncCommand IncreaseQuantityCommand { get; }
-
         public AsyncCommand DecreaseQuantityCommand { get; }
+        public AsyncCommand AddToCartCommand { get; }
 
-        public ProductDetailsViewModel(DatabaseService databaseService)
+        public ProductDetailsViewModel(
+            DatabaseService databaseService,
+            CustomerSessionService customerSessionService)
         {
             this.databaseService = databaseService;
+            this.customerSessionService = customerSessionService;
 
             IncreaseQuantityCommand = new AsyncCommand(
                 IncreaseQuantityAsync,
@@ -91,6 +119,10 @@ namespace MPS11_OfflineShoppingApp.ViewModels
             DecreaseQuantityCommand = new AsyncCommand(
                 DecreaseQuantityAsync,
                 CanDecreaseQuantity);
+
+            AddToCartCommand = new AsyncCommand(
+                AddToCartAsync,
+                CanAddToCart);
         }
 
         public void ApplyQueryAttributes(
@@ -128,9 +160,6 @@ namespace MPS11_OfflineShoppingApp.ViewModels
                 CategoryName = category?.Name ?? "Uncategorised";
 
                 Quantity = 1;
-
-                IncreaseQuantityCommand.RaiseCanExecuteChanged();
-                DecreaseQuantityCommand.RaiseCanExecuteChanged();
             }
             catch (Exception ex)
             {
@@ -171,6 +200,62 @@ namespace MPS11_OfflineShoppingApp.ViewModels
         private bool CanDecreaseQuantity()
         {
             return Quantity > 1;
+        }
+
+        private bool CanAddToCart()
+        {
+            return Product != null
+                && Product.Stock > 0
+                && Quantity > 0
+                && Quantity <= Product.Stock
+                && !IsLoading
+                && !IsAddingToCart;
+        }
+
+        private async Task AddToCartAsync()
+        {
+            if (!CanAddToCart())
+            {
+                return;
+            }
+
+            Customer? customer =
+                customerSessionService.SelectedCustomer;
+
+            if (customer == null)
+            {
+                StatusMessage = "Please select a customer first.";
+                return;
+            }
+
+            try
+            {
+                IsAddingToCart = true;
+                StatusMessage = string.Empty;
+
+                (bool Success, string Message) result =
+                    await databaseService.AddToCartAsync(
+                        customer.CustomerId,
+                        Product!.ProductId,
+                        Quantity);
+
+                StatusMessage = result.Message;
+
+                if (result.Success)
+                {
+                    // Refresh command availability after a successful add.
+                    AddToCartCommand.RaiseCanExecuteChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error adding product to cart: {ex}");
+                StatusMessage = "Unable to add this product to your cart.";
+            }
+            finally
+            {
+                IsAddingToCart = false;
+            }
         }
     }
 }

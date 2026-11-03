@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BaseView
+    x:Class="MPS11_OfflineShoppingApp.Views.CartView"
+    x:TypeArguments="viewModels:CartViewModel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:MPS11_OfflineShoppingApp.Views"
+    xmlns:viewModels="clr-namespace:MPS11_OfflineShoppingApp.ViewModels"
+    Title="Your Cart"
+    BackgroundColor="#101010">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="20" Spacing="20">
+
+                <VerticalStackLayout Spacing="4">
+                    <Label
+                        Text="OFFLINE STORE."
+                        FontSize="24"
+                        FontAttributes="Bold"
+                        TextColor="White" />
+
+                    <BoxView
+                        HeightRequest="3"
+                        WidthRequest="55"
+                        HorizontalOptions="Start"
+                        Color="#E10600" />
+
+                    <Label
+                        Text="YOUR RACE DAY"
+                        FontSize="11"
+                        FontAttributes="Bold"
+                        TextColor="#E10600"
+                        CharacterSpacing="2" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="5">
+                    <Label
+                        Text="Shopping Cart"
+                        FontSize="28"
+                        FontAttributes="Bold"
+                        TextColor="White" />
+
+                    <Label
+                        Text="{Binding CustomerName}"
+                        FontSize="14"
+                        TextColor="#A0A0A0" />
+                </VerticalStackLayout>
+
+                <ActivityIndicator
+                    IsRunning="{Binding IsLoading}"
+                    IsVisible="{Binding IsLoading}"
+                    Color="#E10600" />
+
+                <CollectionView
+                    ItemsSource="{Binding Items}"
+                    SelectionMode="None">
+
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout
+                            Padding="20"
+                            Spacing="10"
+                            HorizontalOptions="Center">
+
+                            <Label
+                                Text="YOUR CART IS EMPTY"
+                                FontSize="16"
+                                FontAttributes="Bold"
+                                TextColor="#A0A0A0"
+                                HorizontalTextAlignment="Center" />
+
+                            <Label
+                                Text="Add some performance parts to get started."
+                                FontSize="13"
+                                TextColor="#707070"
+                                HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                BackgroundColor="#1C1C1C"
+                                StrokeThickness="0"
+                                Padding="14"
+                                Margin="0,0,0,12">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <Grid
+                                    ColumnDefinitions="60,*,Auto"
+                                    RowDefinitions="Auto,Auto,Auto"
+                                    ColumnSpacing="12"
+                                    RowSpacing="5">
+
+                                    <Border
+                                        Grid.RowSpan="3"
+                                        BackgroundColor="#292929"
+                                        StrokeThickness="0"
+                                        HeightRequest="60"
+                                        WidthRequest="60"
+                                        VerticalOptions="Start">
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="6" />
+                                        </Border.StrokeShape>
+
+                                        <Label
+                                            Text="F1"
+                                            TextColor="#E10600"
+                                            FontSize="22"
+                                            FontAttributes="Bold"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </Border>
+
+                                    <Label
+                                        Grid.Column="1"
+                                        Text="{Binding ProductName}"
+                                        FontSize="15"
+                                        FontAttributes="Bold"
+                                        TextColor="White"
+                                        LineBreakMode="TailTruncation" />
+
+                                    <Label
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Text="{Binding FormattedUnitPrice}"
+                                        FontSize="12"
+                                        TextColor="#A0A0A0" />
+
+                                    <Label
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Text="{Binding Quantity, StringFormat='QTY: {0}'}"
+                                        FontSize="12"
+                                        TextColor="#A0A0A0" />
+
+                                    <Label
+                                        Grid.Column="2"
+                                        Text="{Binding FormattedLineTotal}"
+                                        FontSize="15"
+                                        FontAttributes="Bold"
+                                        TextColor="#E10600"
+                                        HorizontalTextAlignment="End" />
+
+                                    <Button
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Text="REMOVE"
+                                        FontSize="10"
+                                        Padding="8,3"
+                                        HeightRequest="30"
+                                        BackgroundColor="#292929"
+                                        TextColor="#E10600"
+                                        Clicked="OnRemoveClicked"
+                                        CommandParameter="{Binding CartItemId}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label
+                    Text="{Binding StatusMessage}"
+                    TextColor="#E10600"
+                    FontSize="13"
+                    HorizontalTextAlignment="Center" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border
+            Grid.Row="1"
+            BackgroundColor="#1C1C1C"
+            StrokeThickness="0"
+            Padding="20">
+
+            <Border.StrokeShape>
+                <RoundRectangle
+                    CornerRadius="14,14,0,0" />
+            </Border.StrokeShape>
+
+            <VerticalStackLayout Spacing="12">
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label
+                        Text="CART TOTAL"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="#A0A0A0"
+                        VerticalOptions="Center" />
+
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding FormattedCartTotal}"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        TextColor="White" />
+                </Grid>
+
+                <Button
+                    Text="CHECKOUT"
+                    IsEnabled="False"
+                    BackgroundColor="#E10600"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HeightRequest="54"
+                    CornerRadius="8" />
+
+                <Button
+                    Text="CONTINUE SHOPPING"
+                    Command="{Binding ContinueShoppingCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#A0A0A0"
+                    FontAttributes="Bold"
+                    HeightRequest="42" />
+
+            </VerticalStackLayout>
+        </Border>
+
+    </Grid>
+</views:BaseView>

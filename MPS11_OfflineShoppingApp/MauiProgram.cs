@@ -38,6 +38,12 @@ namespace MPS11_OfflineShoppingApp
             builder.Services.AddTransient<ProductDetailsViewModel>();
 
             builder.Services.AddTransient<ProductDetailsView>();
+
+            builder.Services.AddSingleton<CustomerSessionService>();
+
+            builder.Services.AddTransient<CartViewModel>();
+
+            builder.Services.AddTransient<CartView>();
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
